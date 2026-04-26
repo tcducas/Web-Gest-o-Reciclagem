@@ -136,14 +136,11 @@ def criar_ponto():
 
 
 # 1. Cadastrar usuário
-
-
-
 @app.route('/usuarios', methods=['POST'])
 def criar_usuario():
     dados = request.get_json(force=True, silent=True)
     if not dados or 'nome' not in dados or 'email' not in dados:
-        return jsonify({"erro": "Campos 'nome' e 'email' são obrigatórios"}), 400
+        return jsonify({"erro": "Campos 'nome' , 'email' 'senha' são obrigatórios"}), 400
     conn = get_db_connection()
     try:
         conn.execute('''
@@ -206,3 +203,7 @@ def deletar_usuario(id):
 
 
 
+
+if __name__ == '__main__':
+    
+    app.run(host='0.0.0.0', port=5000, debug=True)

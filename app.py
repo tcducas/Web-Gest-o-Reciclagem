@@ -1,13 +1,16 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify,render_template
 import sqlite3
 
 app = Flask(__name__)
-
 def get_db_connection():
     conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
     return conn  
 
+# ROTA PARA ABRIR A INTERFACE WEB (FRONT-END)
+@app.route('/sistema', methods=['GET'])
+def abrir_sistema():
+    return render_template('index.html')
 @app.route('/', methods=['GET'])
 def home():
     return "Bem-vindo ao sistema de gerenciamento de materiais!"

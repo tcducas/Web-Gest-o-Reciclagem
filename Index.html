@@ -1,0 +1,102 @@
+ <!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Reciclagem</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #2e7d32; text-align: center; }
+        .form-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        button { background-color: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #1b5e20; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #e8f5e9; color: #2e7d32; }
+        .delete-btn { background-color: #c62828; padding: 5px 10px; font-size: 12px; }
+        .delete-btn:hover { background-color: #b71c1c; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>♻️ Sistema de Materiais Recicláveis</h1>
+    
+    <div class="form-group">
+        <input type="text" id="nomeMaterial" placeholder="Nome do Material (Ex: Garrafa PET)">
+        <input type="text" id="categoriaMaterial" placeholder="Categoria (Ex: Plástico)">
+        <button onclick="cadastrarMaterial()">Cadastrar</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome do Material</th>
+                <th>Categoria</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaMateriais">
+            </tbody>
+    </table>
+</div>
+
+<script>
+    // URL base da sua API
+    const apiUrl = '/materiais';
+
+    // Função READ (GET) - Lista os materiais usando FETCH API
+    function carregarMateriais() {
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(dados => {
+                const tabela = document.getElementById('tabelaMateriais');
+                tabela.innerHTML = '';
+                dados.forEach(material => {
+                    tabela.innerHTML += `
+                        <tr>
+                            <td>${material.id}</td>
+                            <td>${material.nome}</td>
+                            <td>${material.categoria || '-'}</td>
+                            <td><button class="delete-btn" onclick="deletarMaterial(${material.id})">Remover</button></td>
+                        </tr>
+                    `;
+                });
+            });
+    }
+
+    // Função CREATE (POST) - Cadastra usando FETCH API
+    function cadastrarMaterial() {
+        const nome = document.getElementById('nomeMaterial').value;
+        const categoria = document.getElementById('categoriaMaterial').value;
+
+        if(!nome) return alert("O nome é obrigatório!");
+
+        fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome: nome, categoria: categoria })
+        }).then(() => {
+            document.getElementById('nomeMaterial').value = '';
+            document.getElementById('categoriaMaterial').value = '';
+            carregarMateriais(); // Recarrega a tabela
+        });
+    }
+
+    // Função DELETE (DELETE) - Remove usando FETCH API
+    function deletarMaterial(id) {
+        if(confirm("Tem certeza que deseja remover?")) {
+            fetch(`${apiUrl}/${id}`, { method: 'DELETE' })
+            .then(() => carregarMateriais());
+        }
+    }
+
+    // Carrega a tabela assim que a página abre
+    window.onload = carregarMateriais;
+</script>
+
+</body>
+</html>

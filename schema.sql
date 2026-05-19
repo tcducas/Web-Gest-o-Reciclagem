@@ -1,4 +1,4 @@
--- 1. Tabela de Usuários
+ -- 1. Tabela de Usuários
 CREATE TABLE IF NOT EXISTS usuarios (
     id INTEGER PRIMARY KEY AUTOINCREMENT, 
     nome TEXT NOT NULL, 

@@ -386,8 +386,8 @@ textarea { resize: vertical; min-height: 72px; }
 
 <script>
 // ── CONFIGURAÇÃO DA API ──────────────────────────────
-// Troque pela URL do seu Codespace quando for testar
-const API = 'https://laughing-meme-7v4jv64rr4wfrr9g-5000.app.github.dev';
+// Usa a mesma origem da página, assim o front e a API ficam conectados automaticamente
+const API = window.location.origin;
 
 // ── UTILITÁRIOS ──────────────────────────────────────
 function toast(msg, tipo = 'ok') {

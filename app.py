@@ -1,19 +1,24 @@
-from flask import Flask, request, jsonify,render_template
+from flask import Flask, request, jsonify, render_template, make_response
+from flask_cors import CORS
 import sqlite3
 
 app = Flask(__name__)
+CORS(app)
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
 def get_db_connection():
     conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
     return conn  
 
-# ROTA PARA ABRIR A INTERFACE WEB (FRONT-END)
-@app.route('/sistema', methods=['GET'])
-def abrir_sistema():
-    return render_template('index.html')
-@app.route('/', methods=['GET'])
+# ROTA PARA ABRIR A INTERFACE DO FRONT 
+@app.route('/')
 def home():
-    return "Bem-vindo ao sistema de gerenciamento de materiais!"
+    response = make_response(render_template('Index.html'))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 # 1. CREATE - Cadastrar novo material
 @app.route('/materiais', methods=['POST'])

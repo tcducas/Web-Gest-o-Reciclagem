@@ -1,102 +1,610 @@
- <!DOCTYPE html>
-<html lang="pt-br">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Reciclagem</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        h1 { color: #2e7d32; text-align: center; }
-        .form-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-        button { background-color: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
-        button:hover { background-color: #1b5e20; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
-        th { background-color: #e8f5e9; color: #2e7d32; }
-        .delete-btn { background-color: #c62828; padding: 5px 10px; font-size: 12px; }
-        .delete-btn:hover { background-color: #b71c1c; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoGest — Sistema de Gestão de Reciclagem</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:   #2d6a4f;
+  --green-l: #52b788;
+  --green-xl:#d8f3dc;
+  --accent:  #f4a261;
+  --dark:    #1b2d25;
+  --mid:     #40675a;
+  --light:   #f0faf4;
+  --white:   #ffffff;
+  --border:  #b7dfc9;
+  --text:    #1b2d25;
+  --muted:   #6b8f7e;
+  --red:     #e63946;
+  --radius:  12px;
+  --shadow:  0 4px 24px rgba(27,45,37,0.10);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--light);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--dark);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+}
+.logo {
+  font-family: 'Space Mono', monospace;
+  font-size: 18px;
+  color: var(--green-l);
+  letter-spacing: -0.02em;
+}
+.logo span { color: var(--accent); }
+.api-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #aaa;
+  font-family: 'Space Mono', monospace;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
+.dot.ok { background: var(--green-l); box-shadow: 0 0 6px var(--green-l); }
+.dot.err { background: var(--red); }
+
+/* ── NAV TABS ── */
+.tabs {
+  display: flex;
+  gap: 0;
+  background: var(--white);
+  border-bottom: 2px solid var(--border);
+  padding: 0 32px;
+  overflow-x: auto;
+}
+.tab {
+  padding: 14px 28px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.tab:hover { color: var(--green); }
+.tab.active { color: var(--green); border-bottom-color: var(--green-l); font-weight: 600; }
+
+/* ── MAIN LAYOUT ── */
+main {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+.section { display: none; }
+.section.active { display: block; }
+
+.section-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+/* ── GRID ── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+
+/* ── CARD ── */
+.card {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title .ico {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+
+/* ── FORM ── */
+.field { margin-bottom: 14px; }
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+input, select, textarea {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  background: var(--light);
+  transition: border-color 0.2s;
+  outline: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--green-l);
+  background: var(--white);
+}
+input.required-err { border-color: var(--red); }
+textarea { resize: vertical; min-height: 72px; }
+
+/* ── BUTTONS ── */
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.18s;
+}
+.btn-primary {
+  background: var(--green);
+  color: var(--white);
+  width: 100%;
+  margin-top: 4px;
+}
+.btn-primary:hover { background: var(--mid); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+.btn-sm {
+  padding: 5px 12px;
+  font-size: 12px;
+  background: var(--green-xl);
+  color: var(--green);
+  border: 1px solid var(--border);
+}
+.btn-danger { background: #fff0f0; color: var(--red); border: 1px solid #fcc; font-size: 12px; padding: 4px 10px; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--dark); color: var(--white); padding: 12px 24px;
+  border-radius: 40px; font-size: 14px; z-index: 999;
+  transition: transform 0.3s; pointer-events: none; white-space: nowrap;
+  border-left: 4px solid var(--green-l);
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+#toast.err  { border-left-color: var(--red); }
+
+/* ── LIST PANEL ── */
+.list-panel {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.list-header {
+  padding: 16px 20px;
+  background: var(--dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.list-header span {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  color: var(--green-l);
+}
+.list-body { max-height: 320px; overflow-y: auto; }
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--green-xl);
+  font-size: 13px;
+  transition: background 0.15s;
+}
+.list-item:last-child { border-bottom: none; }
+.list-item:hover { background: var(--light); }
+.list-item-info strong { display: block; font-size: 14px; color: var(--dark); }
+.list-item-info span  { font-size: 12px; color: var(--muted); }
+.tag {
+  display: inline-block; font-size: 11px; padding: 2px 8px;
+  border-radius: 20px; background: var(--green-xl); color: var(--green);
+  font-weight: 600; margin-right: 4px;
+}
+.empty { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
+
+/* ── SPINNER ── */
+.spinner {
+  display: inline-block; width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+  border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
 </head>
 <body>
 
-<div class="container">
-    <h1>♻️ Sistema de Materiais Recicláveis</h1>
-    
-    <div class="form-group">
-        <input type="text" id="nomeMaterial" placeholder="Nome do Material (Ex: Garrafa PET)">
-        <input type="text" id="categoriaMaterial" placeholder="Categoria (Ex: Plástico)">
-        <button onclick="cadastrarMaterial()">Cadastrar</button>
-    </div>
+<!-- HEADER -->
+<header>
+  <div class="logo">Eco<span>Gest</span></div>
+  <div class="api-status">
+    <div class="dot" id="api-dot"></div>
+    <span id="api-label">verificando api...</span>
+  </div>
+</header>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nome do Material</th>
-                <th>Categoria</th>
-                <th>Ação</th>
-            </tr>
-        </thead>
-        <tbody id="tabelaMateriais">
-            </tbody>
-    </table>
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('usuarios', this)">👤 Usuários</button>
+  <button class="tab" onclick="showTab('materiais', this)">♻️ Materiais</button>
+  <button class="tab" onclick="showTab('pontos', this)">📍 Pontos de Coleta</button>
 </div>
 
+<main>
+
+  <!-- ════════════════════════════════ -->
+  <!-- USUÁRIOS                        -->
+  <!-- ════════════════════════════════ -->
+  <div class="section active" id="sec-usuarios">
+    <p class="section-title">Gestão de Usuários</p>
+    <div class="grid">
+      <!-- Formulário -->
+      <div class="card">
+        <div class="card-title">
+          <div class="ico" style="background:#d8f3dc">👤</div>
+          Cadastrar Usuário
+        </div>
+        <div class="field"><label>Nome *</label><input id="u-nome" placeholder="Nome completo"></div>
+        <div class="field"><label>Email *</label><input id="u-email" type="email" placeholder="email@exemplo.com"></div>
+        <div class="field"><label>Senha *</label><input id="u-senha" type="password" placeholder="Senha"></div>
+        <button class="btn btn-primary" onclick="cadastrarUsuario()">Cadastrar</button>
+      </div>
+
+      <!-- Lista -->
+      <div class="list-panel">
+        <div class="list-header">
+          <span>Usuários cadastrados</span>
+          <button class="btn btn-sm" onclick="carregarUsuarios()">↻ Atualizar</button>
+        </div>
+        <div class="list-body" id="lista-usuarios">
+          <div class="empty">Nenhum usuário ainda.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════ -->
+  <!-- MATERIAIS                       -->
+  <!-- ════════════════════════════════ -->
+  <div class="section" id="sec-materiais">
+    <p class="section-title">Gestão de Materiais Recicláveis</p>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">
+          <div class="ico" style="background:#d8f3dc">♻️</div>
+          Cadastrar Material
+        </div>
+        <div class="field"><label>Nome *</label><input id="m-nome" placeholder="Ex: Garrafa PET"></div>
+        <div class="field">
+          <label>Categoria</label>
+          <select id="m-categoria">
+            <option value="">Selecione...</option>
+            <option>Plástico</option>
+            <option>Papel</option>
+            <option>Vidro</option>
+            <option>Metal</option>
+            <option>Eletrônico</option>
+            <option>Orgânico</option>
+            <option>Outro</option>
+          </select>
+        </div>
+        <div class="field"><label>Descrição</label><textarea id="m-descricao" placeholder="Descreva o material..."></textarea></div>
+        <button class="btn btn-primary" onclick="cadastrarMaterial()">Cadastrar</button>
+      </div>
+
+      <div class="list-panel">
+        <div class="list-header">
+          <span>Materiais cadastrados</span>
+          <button class="btn btn-sm" onclick="carregarMateriais()">↻ Atualizar</button>
+        </div>
+        <div class="list-body" id="lista-materiais">
+          <div class="empty">Nenhum material ainda.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════ -->
+  <!-- PONTOS DE COLETA                -->
+  <!-- ════════════════════════════════ -->
+  <div class="section" id="sec-pontos">
+    <p class="section-title">Gestão de Pontos de Coleta</p>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">
+          <div class="ico" style="background:#d8f3dc">📍</div>
+          Cadastrar Ponto de Coleta
+        </div>
+        <div class="field"><label>Nome do local *</label><input id="p-nome" placeholder="Ex: Ecoponto Central"></div>
+        <div class="field"><label>Endereço *</label><input id="p-endereco" placeholder="Rua, número, bairro"></div>
+        <div class="field"><label>Horário de funcionamento *</label><input id="p-horario" placeholder="Ex: Seg-Sex 08:00–18:00"></div>
+        <div class="field"><label>Telefone</label><input id="p-telefone" placeholder="(11) 99999-9999"></div>
+        <div class="field"><label>Tipos de resíduos aceitos</label><input id="p-residuo" placeholder="Ex: Plástico, Papel, Vidro"></div>
+        <button class="btn btn-primary" onclick="cadastrarPonto()">Cadastrar</button>
+      </div>
+
+      <div class="list-panel">
+        <div class="list-header">
+          <span>Pontos cadastrados</span>
+          <button class="btn btn-sm" onclick="carregarPontos()">↻ Atualizar</button>
+        </div>
+        <div class="list-body" id="lista-pontos">
+          <div class="empty">Nenhum ponto ainda.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div id="toast"></div>
+
 <script>
-    // URL base da sua API
-    const apiUrl = '/materiais';
+// ── CONFIGURAÇÃO DA API ──────────────────────────────
+// Troque pela URL do seu Codespace quando for testar
+const API = 'https://laughing-meme-7v4jv64rr4wfrr9g-5000.app.github.dev';
 
-    // Função READ (GET) - Lista os materiais usando FETCH API
-    function carregarMateriais() {
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(dados => {
-                const tabela = document.getElementById('tabelaMateriais');
-                tabela.innerHTML = '';
-                dados.forEach(material => {
-                    tabela.innerHTML += `
-                        <tr>
-                            <td>${material.id}</td>
-                            <td>${material.nome}</td>
-                            <td>${material.categoria || '-'}</td>
-                            <td><button class="delete-btn" onclick="deletarMaterial(${material.id})">Remover</button></td>
-                        </tr>
-                    `;
-                });
-            });
+// ── UTILITÁRIOS ──────────────────────────────────────
+function toast(msg, tipo = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (tipo === 'err' ? ' err' : '');
+  setTimeout(() => t.className = '', 3000);
+}
+
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'usuarios')  carregarUsuarios();
+  if (id === 'materiais') carregarMateriais();
+  if (id === 'pontos')    carregarPontos();
+}
+
+function setLoading(btn) {
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Salvando...';
+}
+function resetBtn(btn, txt) {
+  btn.disabled = false;
+  btn.innerHTML = txt;
+}
+
+// ── STATUS DA API ────────────────────────────────────
+async function checkApi() {
+  try {
+    const r = await fetch(API + '/', { signal: AbortSignal.timeout(4000) });
+    if (r.ok) {
+      document.getElementById('api-dot').className = 'dot ok';
+      document.getElementById('api-label').textContent = 'API conectada';
+    } else { throw new Error(); }
+  } catch {
+    document.getElementById('api-dot').className = 'dot err';
+    document.getElementById('api-label').textContent = 'API offline';
+  }
+}
+
+// ══════════════════════════════════════════
+// USUÁRIOS
+// ══════════════════════════════════════════
+async function cadastrarUsuario() {
+  const nome  = document.getElementById('u-nome').value.trim();
+  const email = document.getElementById('u-email').value.trim();
+  const senha = document.getElementById('u-senha').value.trim();
+  if (!nome || !email || !senha) { toast('Preencha todos os campos obrigatórios', 'err'); return; }
+
+  const btn = document.querySelector('#sec-usuarios .btn-primary');
+  setLoading(btn);
+  try {
+    const r = await fetch(API + '/usuarios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, email, senha })
+    });
+    const data = await r.json();
+    if (r.ok) {
+      toast('✅ Usuário cadastrado com sucesso!');
+      document.getElementById('u-nome').value = '';
+      document.getElementById('u-email').value = '';
+      document.getElementById('u-senha').value = '';
+      carregarUsuarios();
+    } else {
+      toast('❌ ' + (data.erro || 'Erro ao cadastrar'), 'err');
     }
+  } catch { toast('❌ Sem conexão com a API', 'err'); }
+  resetBtn(btn, 'Cadastrar');
+}
 
-    // Função CREATE (POST) - Cadastra usando FETCH API
-    function cadastrarMaterial() {
-        const nome = document.getElementById('nomeMaterial').value;
-        const categoria = document.getElementById('categoriaMaterial').value;
+async function carregarUsuarios() {
+  try {
+    const r = await fetch(API + '/usuarios');
+    const data = await r.json();
+    const el = document.getElementById('lista-usuarios');
+    if (!data.length) { el.innerHTML = '<div class="empty">Nenhum usuário cadastrado.</div>'; return; }
+    el.innerHTML = data.map(u => `
+      <div class="list-item">
+        <div class="list-item-info">
+          <strong>${u.nome}</strong>
+          <span>${u.email}</span>
+        </div>
+        <button class="btn btn-danger" onclick="deletarUsuario(${u.id}, this)">✕</button>
+      </div>
+    `).join('');
+  } catch { document.getElementById('lista-usuarios').innerHTML = '<div class="empty">Erro ao carregar.</div>'; }
+}
 
-        if(!nome) return alert("O nome é obrigatório!");
+async function deletarUsuario(id, btn) {
+  if (!confirm('Remover este usuário?')) return;
+  await fetch(API + '/usuarios/' + id, { method: 'DELETE' });
+  toast('Usuário removido');
+  carregarUsuarios();
+}
 
-        fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nome: nome, categoria: categoria })
-        }).then(() => {
-            document.getElementById('nomeMaterial').value = '';
-            document.getElementById('categoriaMaterial').value = '';
-            carregarMateriais(); // Recarrega a tabela
-        });
+// ══════════════════════════════════════════
+// MATERIAIS
+// ══════════════════════════════════════════
+async function cadastrarMaterial() {
+  const nome      = document.getElementById('m-nome').value.trim();
+  const categoria = document.getElementById('m-categoria').value;
+  const descricao = document.getElementById('m-descricao').value.trim();
+  if (!nome) { toast('Campo "Nome" é obrigatório', 'err'); return; }
+
+  const btn = document.querySelector('#sec-materiais .btn-primary');
+  setLoading(btn);
+  try {
+    const r = await fetch(API + '/materiais', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, categoria, descricao })
+    });
+    const data = await r.json();
+    if (r.ok) {
+      toast('✅ Material cadastrado com sucesso!');
+      document.getElementById('m-nome').value = '';
+      document.getElementById('m-categoria').value = '';
+      document.getElementById('m-descricao').value = '';
+      carregarMateriais();
+    } else {
+      toast('❌ ' + (data.erro || 'Erro ao cadastrar'), 'err');
     }
+  } catch { toast('❌ Sem conexão com a API', 'err'); }
+  resetBtn(btn, 'Cadastrar');
+}
 
-    // Função DELETE (DELETE) - Remove usando FETCH API
-    function deletarMaterial(id) {
-        if(confirm("Tem certeza que deseja remover?")) {
-            fetch(`${apiUrl}/${id}`, { method: 'DELETE' })
-            .then(() => carregarMateriais());
-        }
+async function carregarMateriais() {
+  try {
+    const r = await fetch(API + '/materiais');
+    const data = await r.json();
+    const el = document.getElementById('lista-materiais');
+    if (!data.length) { el.innerHTML = '<div class="empty">Nenhum material cadastrado.</div>'; return; }
+    el.innerHTML = data.map(m => `
+      <div class="list-item">
+        <div class="list-item-info">
+          <strong>${m.nome}</strong>
+          <span>${m.categoria ? '<span class="tag">'+m.categoria+'</span>' : ''} ${m.descricao || ''}</span>
+        </div>
+        <button class="btn btn-danger" onclick="deletarMaterial(${m.id})">✕</button>
+      </div>
+    `).join('');
+  } catch { document.getElementById('lista-materiais').innerHTML = '<div class="empty">Erro ao carregar.</div>'; }
+}
+
+async function deletarMaterial(id) {
+  if (!confirm('Remover este material?')) return;
+  await fetch(API + '/materiais/' + id, { method: 'DELETE' });
+  toast('Material removido');
+  carregarMateriais();
+}
+
+// ══════════════════════════════════════════
+// PONTOS DE COLETA
+// ══════════════════════════════════════════
+async function cadastrarPonto() {
+  const nome_local            = document.getElementById('p-nome').value.trim();
+  const endereco              = document.getElementById('p-endereco').value.trim();
+  const horario_funcionamento = document.getElementById('p-horario').value.trim();
+  const telefone_contato      = document.getElementById('p-telefone').value.trim();
+  const tipo_residuo_aceito   = document.getElementById('p-residuo').value.trim();
+
+  if (!nome_local || !endereco || !horario_funcionamento) {
+    toast('Preencha os campos obrigatórios (*)', 'err'); return;
+  }
+
+  const btn = document.querySelector('#sec-pontos .btn-primary');
+  setLoading(btn);
+  try {
+    const r = await fetch(API + '/pontos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome_local, endereco, horario_funcionamento, telefone_contato, tipo_residuo_aceito })
+    });
+    const data = await r.json();
+    if (r.ok) {
+      toast('✅ Ponto de coleta cadastrado!');
+      ['p-nome','p-endereco','p-horario','p-telefone','p-residuo'].forEach(id => document.getElementById(id).value = '');
+      carregarPontos();
+    } else {
+      toast('❌ ' + (data.erro || 'Erro ao cadastrar'), 'err');
     }
+  } catch { toast('❌ Sem conexão com a API', 'err'); }
+  resetBtn(btn, 'Cadastrar');
+}
 
-    // Carrega a tabela assim que a página abre
-    window.onload = carregarMateriais;
+async function carregarPontos() {
+  try {
+    const r = await fetch(API + '/pontos');
+    const data = await r.json();
+    const el = document.getElementById('lista-pontos');
+    if (!data.length) { el.innerHTML = '<div class="empty">Nenhum ponto cadastrado.</div>'; return; }
+    el.innerHTML = data.map(p => `
+      <div class="list-item">
+        <div class="list-item-info">
+          <strong>${p.nome_local}</strong>
+          <span>📍 ${p.endereco} · 🕐 ${p.horario_funcionamento}</span>
+          ${p.tipo_residuo_aceito ? '<span><span class="tag">'+p.tipo_residuo_aceito+'</span></span>' : ''}
+        </div>
+        <button class="btn btn-danger" onclick="deletarPonto(${p.id})">✕</button>
+      </div>
+    `).join('');
+  } catch { document.getElementById('lista-pontos').innerHTML = '<div class="empty">Erro ao carregar.</div>'; }
+}
+
+async function deletarPonto(id) {
+  if (!confirm('Remover este ponto?')) return;
+  await fetch(API + '/pontos/' + id, { method: 'DELETE' });
+  toast('Ponto removido');
+  carregarPontos();
+}
+
+// ── INICIALIZAR ──────────────────────────────────────
+checkApi();
+carregarUsuarios();
 </script>
-
 </body>
 </html>
